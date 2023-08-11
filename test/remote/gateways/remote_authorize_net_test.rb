@@ -903,8 +903,8 @@ class RemoteAuthorizeNetTest < Test::Unit::TestCase
 
   def test_successful_credit_with_network_tokenization
     credit_card = network_tokenization_credit_card(
-      '4000100011112224',
-      payment_cryptogram: 'EHuWW9PiBkWvqE5juRwDzAUFBAk=',
+      '5424000000000015',
+      payment_cryptogram: 'EjRWeJASNFZ4kBI0VniQEjRWeJA=',
       verification_value: nil
     )
 
