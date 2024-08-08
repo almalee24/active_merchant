@@ -1,3 +1,4 @@
+require 'pry'
 module ActiveMerchant #:nodoc:
   module Billing #:nodoc:
     # The Mercury gateway integration by default requires that the Mercury
@@ -244,11 +245,14 @@ module ActiveMerchant #:nodoc:
 
       def parse(action, body)
         response = {}
+        # We get a body from the gateway
+        # unescapexml should ensure that it returns a good body
         hashify_xml!(unescape_xml(body), response)
         response
       end
 
       def hashify_xml!(xml, response)
+        # rexml can parse this but it's calling the first level as undefined
         xml = REXML::Document.new(xml)
 
         xml.elements.each('//CmdResponse/*') do |node|
@@ -349,7 +353,7 @@ module ActiveMerchant #:nodoc:
       end
 
       def unescape_xml(escaped_xml)
-        xml = escaped_xml.gsub(/\&gt;/, '>')
+        xml = escaped_xml.gsub(/\&gt;/, '>').gsub(/\r/, '').gsub(/\n/, '').gsub(/\t/, '').gsub('&lt;', '<')
         xml.slice! "<?xml version=\"1.0\"?>" # rubocop:disable Style/StringLiterals
         xml
       end
