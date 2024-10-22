@@ -440,7 +440,7 @@ module ActiveMerchant #:nodoc:
         post[:level3] = level_three unless level_three.empty?
       end
 
-      def add_expand_parameters(post, options)
+      def add_expand_parameters(method, url, post, options)
         post[:expand] ||= []
         post[:expand].concat(Array.wrap(options[:expand]).map(&:to_sym)).uniq!
       end
@@ -711,7 +711,7 @@ module ActiveMerchant #:nodoc:
       end
 
       def commit(method, url, parameters = nil, options = {})
-        add_expand_parameters(parameters, options) if parameters
+        add_expand_parameters(method, url, parameters, options) if parameters
         return Response.new(false, 'Invalid API Key provided') unless key_valid?(options)
 
         response = api_request(method, url, parameters, options)
@@ -719,6 +719,7 @@ module ActiveMerchant #:nodoc:
         success = success_from(response, options)
 
         card_checks = card_from_response(response)
+
         avs_code = AVS_CODE_TRANSLATOR["line1: #{card_checks['address_line1_check']}, zip: #{card_checks['address_zip_check'] || card_checks['address_postal_code_check']}"]
         cvc_code = CVC_CODE_TRANSLATOR[card_checks['cvc_check']]
         Response.new(
@@ -816,10 +817,7 @@ module ActiveMerchant #:nodoc:
       end
 
       def card_from_response(response)
-        # StripePI puts the AVS and CVC check significantly deeper into the response object
-        response['card'] || response['active_card'] || response['source'] ||
-          response.dig('charges', 'data', 0, 'payment_method_details', 'card', 'checks') ||
-          response.dig('latest_attempt', 'payment_method_details', 'card', 'checks') || {}
+        response['card'] || response['active_card'] || response['source'] || {}
       end
 
       def emv_authorization_from_response(response)
